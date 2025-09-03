@@ -40,6 +40,25 @@ def log_request_info(method, url, data=None, response=None):
     print("=" * 50)
 
 
+def test_get_users_with_pagination():
+    url = f"{BASE_URL}/users?page=2&per_page=3"
+    response = requests.get(url, headers=get_headers())
+    log_request_info("GET", url, response=response)
+
+    assert response.status_code == 200, f"Ожидался статус-код 200, получен {response.status_code}"
+
+    response_data = response.json()
+    assert 'page' in response_data, "Ответ не содержит ключ 'page'"
+    assert 'data' in response_data, "Ответ не содержит ключ 'data'"
+    assert 'per_page' in response_data, "Ответ не содержит ключ 'per_page'"
+    assert 'total' in response_data, "Ответ не содержит ключ 'total'"
+
+    assert response_data['page'] == 2, f"Ожидалась страница 2, получена {response_data['page']}"
+    assert len(
+        response_data['data']) <= 3, f"Количество пользователей ({len(response_data['data'])}) превышает ожидаемое (3)"
+    assert response_data['per_page'] == 3, f"Ожидалось per_page=3, получено {response_data['per_page']}"
+
+
 def test_get_users_list():
     url = f"{BASE_URL}/users"
     response = requests.get(url)
@@ -210,6 +229,7 @@ def test_register_user_unsuccessful():
 if __name__ == "__main__":
     print("Запуск тестов API...")
 
+    test_get_users_with_pagination()
     test_get_users_list()
     test_get_single_user()
     test_create_user()
